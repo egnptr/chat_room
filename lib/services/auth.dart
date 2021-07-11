@@ -14,6 +14,10 @@ class Auth {
     return auth.currentUser;
   }
 
+  String getCurrentUserID() {
+    return auth.currentUser.uid;
+  }
+
   signInWithGoogle(BuildContext context) async {
     final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
     final GoogleSignIn _googleSignIn = new GoogleSignIn();

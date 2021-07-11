@@ -1,13 +1,14 @@
 import 'package:chat_room/screens/chat_page.dart';
 import 'package:chat_room/screens/passcode_lock.dart';
 import 'package:chat_room/screens/sign_in.dart';
+import 'package:chat_room/screens/edit_profile.dart';
 import 'package:chat_room/services/auth.dart';
 import 'package:chat_room/services/database.dart';
 import 'package:chat_room/shared/preference_helper.dart';
 import 'package:chat_room/widget/change_theme_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rating_dialog/rating_dialog.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -18,7 +19,6 @@ class _HomeState extends State<Home> {
   bool isSearching = false;
   String myName, myProfilePic, myUserName, myEmail;
   Stream usersStream, chatRoomsStream;
-
 
   TextEditingController searchUsernameEditingController =
       TextEditingController();
@@ -37,7 +37,46 @@ class _HomeState extends State<Home> {
               context, MaterialPageRoute(builder: (context) => SignIn()));
         });
         break;
+
+      case 'Edit Profile':
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => EditProfile(
+                      userName: myUserName,
+                    )));
+        break;
+
+      case 'Rate Application':
+        _showRatingAppDialog();
+        break;
     }
+  }
+
+  void _showRatingAppDialog() {
+    final _ratingDialog = RatingDialog(
+      ratingColor: Colors.amber,
+      title: 'Rating this application',
+      message: 'Rate this app and tell others what you think.',
+      submitButton: 'Submit',
+      onCancelled: () => print('cancelled'),
+      onSubmitted: (response) {
+        print('rating: ${response.rating}, '
+            'comment: ${response.comment}');
+
+        if (response.rating < 3.0) {
+          print('response.rating: ${response.rating}');
+        } else {
+          Container();
+        }
+      },
+    );
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => _ratingDialog,
+    );
   }
 
   getMyInfoFromSharedPreference() async {
@@ -164,7 +203,12 @@ class _HomeState extends State<Home> {
           PopupMenuButton<String>(
             onSelected: handleClick,
             itemBuilder: (BuildContext context) {
-              return {'Reset Passcode', 'Logout'}.map((String choice) {
+              return {
+                'Edit Profile',
+                'Reset Passcode',
+                'Logout',
+                'Rate Application'
+              }.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
                   child: Text(choice),

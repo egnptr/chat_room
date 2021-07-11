@@ -1,5 +1,10 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:chat_room/services/auth.dart';
 import 'package:chat_room/shared/preference_helper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class Database {
   Future addUserInfoToDB(
@@ -75,5 +80,42 @@ class Database {
         .collection("users")
         .where("username", isEqualTo: username)
         .get();
+  }
+
+  static Stream<QuerySnapshot> getUserInfoStream(String username) {
+    return FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: username)
+        .snapshots();
+  }
+
+  static UploadTask uploadPhotoProfile(String destinationPath, File file) {
+    try {
+      final ref = FirebaseStorage.instance.ref(destinationPath);
+
+      return ref.putFile(file);
+    } on FirebaseException catch (e) {
+      return null;
+    }
+  }
+
+  static UploadTask uploadPhotoProfileBytes(
+      String destinationPath, Uint8List data) {
+    try {
+      final ref = FirebaseStorage.instance.ref(destinationPath);
+
+      return ref.putData(data);
+    } on FirebaseException catch (e) {
+      return null;
+    }
+  }
+
+  static Future<void> updateUserPhoto(String filePath) {
+    return FirebaseFirestore.instance
+        .collection("users")
+        .doc(Auth().getCurrentUserID())
+        .update({'imgUrl': filePath})
+        .then((value) => print("profile photo Updated"))
+        .catchError((error) => print("Failed to update user photo: $error"));
   }
 }
